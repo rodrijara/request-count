@@ -12,7 +12,7 @@ var PORT = "8083"
 var DBDIR = "/db/"
 
 func main() {
-	log.Println("Starting server ...")
+	log.Println("Running server...")
 	http.HandleFunc("/", visitHandler)
 	if err := http.ListenAndServe(":"+PORT, nil); err != nil {
 		log.Println("ERROR server:", err)
@@ -20,6 +20,7 @@ func main() {
 }
 
 // visitHandler returns the number of times a request has been made to the server
+// the number of times is counted for both instances and cluster
 func visitHandler(res http.ResponseWriter, req *http.Request) {
 	// set instance and cluster names
 	instance, err := os.Hostname()
@@ -37,8 +38,9 @@ func visitHandler(res http.ResponseWriter, req *http.Request) {
 		instance, PORT, icount, ccount)
 }
 
-// WriteLogs writes a line to instance log file when visited.
+// WriteLogs writes a line to instance and cluster log files when visited.
 func WriteLogs(instance, cluster string) {
+
 	// instance log
 	ilog, err := os.OpenFile(instance, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0755)
 	defer ilog.Close()
@@ -59,7 +61,8 @@ func WriteLogs(instance, cluster string) {
 
 }
 
-//  VisitCount returns the number of logs (visits) written to instance log file.
+// VisitCounts returns the number of visits to instance and cluster
+// visits are calculated from the number of lines written to log files.
 func VisitCounts(instance, cluster string) (int, int) {
 	var icount, ccount int
 
