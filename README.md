@@ -59,7 +59,7 @@ $ curl http://localhost:8083
 
 The number of visit to the server has been calculated using log files.
 
-`visitHandler` function runs when a request to the server `localhost:8083` is made.
+`visitHandler` runs when a request to the server `localhost:8083` is made.
 
 `WriteLogs` creates/open files with instance (replica) and cluster names and writes a line
 with datetime information.
@@ -71,17 +71,15 @@ Instance name also is used in the response message, so that the count of visits 
 func visitHandler(res http.ResponseWriter, req *http.Request) {
 
 	instance, err := os.Hostname()
-	if err != nil {
-		log.Println("ERROR getting instance Hostname", err)
-	}
-	cluster := req.Host
+	check("ERROR getting instance Hostname:", err)
 
-	WriteLogs(DBDIR+instance, DBDIR+cluster)
+	WriteLogs(DBDIR+instance, DBDIR+"cluster")
 
-	icount, ccount := VisitCounts(DBDIR+instance, DBDIR+cluster)
+	icount, ccount := VisitCounts(DBDIR+instance, DBDIR+"cluster")
 
 	fmt.Fprintf(res,
-		"You are talking to instance %s:%s.\nThis is request %d to this instance and request %d to the cluster.\n",
+		"You are talking to instance %s:%s.\n"+
+			"This is request %d to this instance and request %d to the cluster.\n",
 		instance, PORT, icount, ccount)
 }
 ```
