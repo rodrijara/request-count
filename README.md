@@ -30,11 +30,11 @@ This is request 2 to this instance and request 3 to the cluster.
 
 1. "RequestCount" server:
 
-   Visit counts to the server has been calculated from log files.
+   The number of visit to the server has been calculated using log files.\
    `visitHandler` function runs when a request to the server `localhost:8083` is made.\
-   `WriteLogs` creates/open files with instance (replica cointainer) and cluster names and writes a line
+   `WriteLogs` creates/open files with instance (replica) and cluster names and writes a line
    with datetime information.
-   `VisitCounts` takes as input the paths of replica container and cluster log files and returns the counts of the lines written both of them. The counts are captured and used in the response message.
+   `VisitCounts` takes as input the paths of replica/container and cluster log files and returns the counts of the lines written both of them. The counts are captured and used in the response message.
    Instance name also is used in the response message, so that the count of visits is referenced.
 
 ```golang
@@ -59,7 +59,7 @@ func visitHandler(res http.ResponseWriter, req *http.Request) {
 2. Dockerize the "RequestCount" server
 
 Dockerfile specifies a single-stage build from a golang alpine image, so the final image is much lighter.
-Port 8083 is exposed.
+Port `8083` is exposed.
 
 ```dockerfile
 FROM golang:1.16-alpine
@@ -77,3 +77,26 @@ CMD [ "/requestCount" ]
 ```
 
 3. Deploy multiple instances of the "RequestCount" server with Docker Compose (replicas: 3)
+
+To deploy three replicas of the server container that can be accessed from a single call to `localhost:8083`, a nginx reverse proxy server was set. The official last image was used.\
+Since the containers need to write and read log files, and the cluster log files must be shared between them, a named volume `mydb` was set.
+
+```yaml
+version: "3.9"
+services:
+  reqserver:
+    build: .
+    deploy:
+      replicas: 3
+    volumes:
+      - mydb:/db
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+volumes:
+  mydb:
+```
