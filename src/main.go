@@ -22,6 +22,7 @@ func main() {
 // visitHandler returns the number of times a request has been made to the server
 // the number of times is counted for both instances and cluster
 func visitHandler(res http.ResponseWriter, req *http.Request) {
+
 	// set instance and cluster names
 	instance, err := os.Hostname()
 	if err != nil {
