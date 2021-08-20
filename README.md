@@ -55,3 +55,25 @@ func visitHandler(res http.ResponseWriter, req *http.Request) {
 		instance, PORT, icount, ccount)
 }
 ```
+
+2. Dockerize the "RequestCount" server
+
+Dockerfile specifies a single-stage build from a golang alpine image, so the final image is much lighter.
+Port 8083 is exposed.
+
+```dockerfile
+FROM golang:1.16-alpine
+
+WORKDIR /myapp
+
+COPY go.mod .
+COPY src/main.go .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /requestCount main.go
+
+EXPOSE 8083
+
+CMD [ "/requestCount" ]
+```
+
+3. Deploy multiple instances of the "RequestCount" server with Docker Compose (replicas: 3)
